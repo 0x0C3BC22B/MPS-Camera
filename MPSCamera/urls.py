@@ -18,5 +18,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('monitor/', include('monitor.urls')),
+    path('api/', include('monitor.urls')),
+    path('webclient/', include('webclient.urls')),
 ]

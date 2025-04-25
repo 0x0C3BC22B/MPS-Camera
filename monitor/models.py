@@ -24,7 +24,7 @@ class IPCamera(Document):
     name = StringField(required=True, max_length=100)
     ip_address = StringField(required=True, max_length=15)
     port = IntField(default=80)
-    model = ListField(EmbeddedDocumentField(CameraModel)),
+    model = ListField(EmbeddedDocumentField(CameraModel))
     created_at = DateTimeField()
     updated_at = DateTimeField()
     status = StringField(default="inactive")
