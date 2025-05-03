@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  gateway:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./gateway:/etc/nginx/conf.d
+    depends_on:
+      - mps_camera
+    networks:
+      appnet:
+        ipv4_address: 172.25.0.2
+
+  mps_camera:
+    build: .
+    volumes:
+      - ./:/app/
+    env_file:
+      - .env
+    networks:
+      appnet:
+        ipv4_address: 172.25.0.10
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    env_file:
+      - .env
+    networks:
+      appnet:
+        ipv4_address: 172.25.0.20
+
+networks:
+  appnet:
+    ipam:
+      config:
+        - subnet: 172.25.0.0/24
+
+volumes:
+  mongodb_data:

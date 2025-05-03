@@ -138,4 +138,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 mongoengine.disconnect()  # Disconnect any existing connections before reinitializing
-init_mongo_connection()  # Initialize MongoDB connection
+init_mongo_connection(host="172.25.0.20")  # Initialize MongoDB connection
