@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 import mongoengine
@@ -24,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*)*q4^00b+p4m4z4ul8y%^dsc*hc6di0@pzsfj=-a0zx30qy$5'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -43,11 +44,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'monitor.apps.MonitorConfig',
     'collector.apps.CollectorConfig',
-    'webclient.apps.WebclientConfig'
+    'webclient.apps.WebclientConfig',
+    'django_celery_beat'
 ]
 
 
-CROSS_ORIGIN_ALLOW_ALL = True
+CROSS_ORIGIN_ALLOW_ALL = os.environ.get('CROSS_ORIGIN_ALLOW_ALL')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -137,5 +139,16 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CELERY_BROKER_URL = 'redis://172.25.0.30:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+
 mongoengine.disconnect()  # Disconnect any existing connections before reinitializing
-init_mongo_connection(host="172.25.0.20")  # Initialize MongoDB connection
+db_host = os.getenv("MONGO_DB_URL")
+db_port = int(os.getenv("MONGO_DB_PORT"))
+db_name = os.getenv("MONGO_DB_NAME")
+
+# Inicializar conexión
+init_mongo_connection(db_name=db_name, host=db_host, port=db_port)

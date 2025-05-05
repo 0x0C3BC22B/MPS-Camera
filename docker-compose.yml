@@ -19,9 +19,43 @@ services:
       - ./:/app/
     env_file:
       - .env
+    depends_on:
+      - redis
+      - mongodb
     networks:
       appnet:
         ipv4_address: 172.25.0.10
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 MPSCamera.wsgi:application"
+
+  celery_worker:
+    build: .
+    command: celery -A MPSCamera worker --loglevel=info
+    volumes:
+      - ./:/app/
+    depends_on:
+      - redis
+      - mps_camera
+    env_file:
+      - .env
+    networks:
+      appnet:
+        ipv4_address: 172.25.0.11
+
+  celery_beat:
+    build: .
+    command: celery -A MPSCamera beat --loglevel=info
+    volumes:
+      - ./:/app/
+    depends_on:
+      - redis
+      - mps_camera
+    env_file:
+      - .env
+    networks:
+      appnet:
+        ipv4_address: 172.25.0.12
 
   mongodb:
     image: mongo:latest
@@ -36,6 +70,18 @@ services:
       appnet:
         ipv4_address: 172.25.0.20
 
+  redis:
+    image: redis/redis-stack-server:7.2.0-v6
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+    networks:
+      appnet:
+        ipv4_address: 172.25.0.30
+    volumes:
+      - cache:/data
+
 networks:
   appnet:
     ipam:
@@ -44,3 +90,4 @@ networks:
 
 volumes:
   mongodb_data:
+  cache:
